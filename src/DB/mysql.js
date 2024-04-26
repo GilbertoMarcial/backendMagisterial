@@ -41,7 +41,17 @@ function handleConnection() {
 // Llamamos a la conexión
 handleConnection();
 
-function getAll(query = 'SELECT * FROM') {
+// Función que obtiene todos los registros de la tabla genérica 'table'
+function getAll(table) {
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM ${table}`, (err, data) => {
+      return (err) ? reject(err) : resolve(data);
+    });
+  });
+}
+
+// Función que obtiene todos los registros de la tabla 'asistentes'
+function getAllAsistants(query = 'SELECT * FROM') {
   return new Promise((resolve, reject) => {
     connection.query(`${query}`, (err, data) => {
       return (err) ? reject(err) : resolve(data);
@@ -49,8 +59,17 @@ function getAll(query = 'SELECT * FROM') {
   });
 }
 
-// Función que obtiene un registro de la tabla 'table' con el id 'id'
-function getOne(query) {
+// Función que obtiene un registro de la tabla genérica 'table' con el id 'id'
+function getOne(table, id) {
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM ${table} WHERE id = ${id}`, (err, data) => {
+      return (err) ? reject(err) : resolve(data);
+    });
+  });
+}
+
+// Función que obtiene un registro de la tabla 'asistentes' con el id 'id'
+function getOneAsistant(query) {
   return new Promise((resolve, reject) => {
     connection.query(`${query}`, (err, data) => {
       return (err) ? reject(err) : resolve(data);
@@ -84,15 +103,30 @@ function update(table, id, data) {
   });
 }
 
-function remove(table, id) {
+function activate(table, id) {
+  return new Promise((resolve, reject) => {
+    connection.query(`UPDATE ${table} SET is_active = 1 WHERE id = ?`, [id], (err, result) => {
+      return (err) ? reject(err) : resolve(result);
+    });
+  });
+}
 
+function deactivate(table, id) {
+  return new Promise((resolve, reject) => {
+    connection.query(`UPDATE ${table} SET is_active = 0 WHERE id = ?`, [id], (err, result) => {
+      return (err) ? reject(err) : resolve(result);
+    });
+  });
 }
 
 module.exports = {
     getAll,
+    getAllAsistants,
     getOne,
+    getOneAsistant,
     deleteOne,
     create,
     update,
-    remove
+    activate,
+    deactivate
 };

@@ -28,7 +28,7 @@ module.exports = function (dbinjected){
                       modalidad ON asistente.modalidad_id = modalidad.id
                     INNER JOIN 
                       tipo_vehiculo ON asistente.tipo_vehiculo_id = tipo_vehiculo.id`;
-    return db.getAll(query_get_all);
+    return db.getAllAsistants(query_get_all);
   }
 
   // Función que obtiene un registro de la tabla 'asistente' con el id 'id'
@@ -48,7 +48,7 @@ module.exports = function (dbinjected){
                       tipo_vehiculo ON asistente.tipo_vehiculo_id = tipo_vehiculo.id
                     WHERE 
                       ${TABLE}.id = ${id}`
-    return db.getOne(query_get_one);
+    return db.getOneAsistant(query_get_one);
   }
 
   // Función que elimina un registro de la tabla 'asistente' con el id 'id'
@@ -68,9 +68,9 @@ module.exports = function (dbinjected){
 
   return {
     getAll, 
-      getOne, 
-      deleteOne, 
-      create, 
-      update
+    getOne, 
+    deleteOne, 
+    create, 
+    update
   }
 }
