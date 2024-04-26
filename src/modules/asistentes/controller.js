@@ -19,7 +19,7 @@ module.exports = function (dbinjected){
                       nombre_asistente, apellidos_asistente, licenciatura, semestre, 
                       email, telefono, is_vehiculo, funcion.nombre as funcion_nombre, 
                       modalidad.nombre as modalidad_nombre, tipo_vehiculo.nombre as vehiculo_nombre,
-                      (SELECT COUNT(*) FROM ${TABLE}) AS total_asisntentes
+                      (SELECT COUNT(*) FROM ${TABLE}) AS total_asistentes
                     FROM 
                       ${TABLE}
                     INNER JOIN 

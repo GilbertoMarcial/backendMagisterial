@@ -1,7 +1,7 @@
 // USERS CONTROLLER
 const TABLE = 'users';
-let query_get_all = "";
-let query_get_one = "";
+const auth = require('../auth');
+const asistant = require('../asistentes');
 
 
 module.exports = function (dbinjected){
@@ -27,10 +27,43 @@ module.exports = function (dbinjected){
     return db.deleteOne(TABLE, body);
   }
 
-
   // Función que crea un registro en la tabla 'users'
-  function create(body) {
-    return db.create(TABLE, body);
+  async function create(body) {
+    const userData = {
+      id: body.id,
+      username: body.username || '',
+      is_admin: body.is_admin || 0,
+      is_active: body.is_active || 1
+    }
+
+    // Se obtiene el id del registro recién insertado
+    const response = await db.create(TABLE, userData);
+    const insertId = response.insertId;
+
+    let responseAuth = '';
+
+    // Se crea el registro en la tabla 'auth'
+    if (body.username && body.password) {
+      responseAuth = await auth.create({
+        id: insertId,
+        username: body.username,
+        password: body.password
+      });
+    }
+
+    // Se crea tambien el registro en asistentes si is_admin = 0
+    if (body.is_admin === 0) {
+      await asistant.create({
+        id: insertId,
+        nombre_asistente: body.nombre_asistente,
+        email: body.username,
+        funcion_id: 1,
+        modalidad_id: 1,
+        tipo_vehiculo_id: 1
+      });
+    }
+
+    return responseAuth;
   }
 
   // Función que actualiza un registro en la tabla 'users'
