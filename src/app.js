@@ -5,6 +5,7 @@ const error = require('./network/errors');
 // Routes
 const asistentes = require('./modules/asistentes/routes');
 const users = require('./modules/users/routes');
+const auth = require('./modules/auth/routes');
 
 const app = express();
 
@@ -18,8 +19,9 @@ app.use(express.urlencoded({ extended: true }));
 app.set('port', config.app.port);
 
 // Routes
-app.use('/api/asistentes', asistentes)
-app.use('/api/users', users)
+app.use('/api/asistentes', asistentes);
+app.use('/api/users', users);
+app.use('/api/auth', auth);
 
 app.use(error);
 

@@ -12,8 +12,20 @@ const controller = require('./index');
 const router = express.Router();
 
 // Rutas de la aplicación
+router.get('/', login);
 
 // Funciones
+async function login (req, res, next) {
+  try {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    const token = await controller.login(username, password);
+    response.success(req, res, token, 200);
+  } catch (error) {
+    next(error);
+  }
+}
 
 // Exportamos el router para poder usar rutas en app.js
 module.exports = router;

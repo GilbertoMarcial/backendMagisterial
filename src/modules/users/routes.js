@@ -2,6 +2,8 @@
 // Se importa express para poder usar el router
 const express = require('express');
 
+const security = require('./security');
+
 // Se importan las responses para poder usar la estructura de la respuesta
 const response = require('../../network/responses');
 
@@ -17,8 +19,8 @@ router.get('/:id', one);
 router.put('/', deleteOne);
 router.post('/', create);
 router.patch('/:id', update);
-router.patch('/activate/:id', activate);
-router.patch('/deactivate/:id', deactivate);
+router.patch('/activate/:id', security(), activate);
+router.patch('/deactivate/:id', security(), deactivate);
 
 // Función que obtiene todos los registros de la tabla users
 async function all (req, res, next) {

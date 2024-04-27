@@ -95,6 +95,7 @@ function create(table, data) {
   });
 }
 
+// Función que actualiza un registro en la tabla 'table'
 function update(table, id, data) {
   return new Promise((resolve, reject) => {
     connection.query(`UPDATE ${table} SET ? WHERE id = ?`, [data, id], (err, result) => {
@@ -103,6 +104,7 @@ function update(table, id, data) {
   });
 }
 
+// Función que activa un registro en la tabla 'table'
 function activate(table, id) {
   return new Promise((resolve, reject) => {
     connection.query(`UPDATE ${table} SET is_active = 1 WHERE id = ?`, [id], (err, result) => {
@@ -111,10 +113,20 @@ function activate(table, id) {
   });
 }
 
+// Función que desactiva un registro en la tabla 'table'
 function deactivate(table, id) {
   return new Promise((resolve, reject) => {
     connection.query(`UPDATE ${table} SET is_active = 0 WHERE id = ?`, [id], (err, result) => {
       return (err) ? reject(err) : resolve(result);
+    });
+  });
+}
+
+// Función para autenticar un usuario
+function query(table, query) {
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM ${table} WHERE ?`, query, (err, data) => {
+      return (err) ? reject(err) : resolve(data[0] || null);
     });
   });
 }
@@ -128,5 +140,6 @@ module.exports = {
     create,
     update,
     activate,
-    deactivate
+    deactivate,
+    query
 };

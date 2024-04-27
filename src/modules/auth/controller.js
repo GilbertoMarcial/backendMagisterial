@@ -1,7 +1,7 @@
 // USERS CONTROLLER
+const bcrypt = require('bcrypt');
+const auth = require('../../auth');
 const TABLE = 'auth';
-let query_get_all = "";
-let query_get_one = "";
 
 
 module.exports = function (dbinjected){
@@ -12,8 +12,24 @@ module.exports = function (dbinjected){
     db = require('../../DB/mysql');
   }
 
+  // Función que autentica un usuario y obtiene el token
+  async function login(username, password) {
+    const data = await db.query(TABLE, {username: username});
+
+    return bcrypt.compare(password, data.password)
+      .then(result => {
+        if (result === true) {
+          // Se genera un token
+          return auth.asignToken({ ...data});
+          
+      } else {
+        throw new Error('Información inválida');
+      }
+    });
+  }
+
   // Función que crea un registro en la tabla 'users'
-  function create(data) {
+  async function create(data) {
     const authData = {
       id: data.id,
     }
@@ -23,13 +39,14 @@ module.exports = function (dbinjected){
     }
 
     if (data.password) {
-      authData.password = data.password;
+      authData.password = await bcrypt.hashSync(data.password.toString(), 5);
     }
 
     return db.create(TABLE, authData);
   }
 
   return {
-    create
+    create,
+    login
   }
 }
