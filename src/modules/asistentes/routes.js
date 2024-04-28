@@ -2,6 +2,9 @@
 // Se importa express para poder usar el router
 const express = require('express');
 
+// Se importa security para validar a través de Token
+const security = require('./security');
+
 // Se importan las responses para poder usar la estructura de la respuesta
 const response = require('../../network/responses');
 
@@ -16,7 +19,7 @@ router.get('/', all);
 router.get('/:id', one);
 router.put('/', deleteOne);
 router.post('/', create);
-router.put('/:id', update);
+router.put('/:id', security(), update);
 
 // Función que obtiene todos los registros de la tabla asistentes
 async function all (req, res, next) {

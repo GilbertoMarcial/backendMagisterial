@@ -1,12 +1,14 @@
 const jwt = require('jsonwebtoken');
 config = require('../config');
+const error = require('../middleware/errors');
 
 // Se obtiene la clave secreta para firmar el token
 const secret = config.jwt.secret;
 
 // Función que firma un token
 function asignToken(data) {
-  return jwt.sign(data, secret);
+  const expiresIn = '24h'; // Token expira en 24 horas
+  return jwt.sign(data, secret, { expiresIn });
 }
 
 // Función que verifica un token
@@ -25,7 +27,7 @@ const checkToken = {
       // Si el id del token no es igual al id del usuario, 
       // verificar que sea un admin
       if (is_admin === 0) {
-        throw new Error('No tienes los permisos para realizar esta acción');
+        throw error('No tienes los permisos para realizar esta acción');
       }
     }
   }
@@ -34,11 +36,11 @@ const checkToken = {
 // Función que obtiene el token de la cabecera de la petición
 function getToken(auth) {
   if (!auth) {
-    throw new Error('No se ha enviado el token');
+    throw error('No se ha enviado el token');
   }
 
   if (auth.indexOf('Bearer ') === -1) {
-    throw new Error('Formato de token incorrecto');
+    throw error('Formato de token incorrecto');
   }
 
   let token = auth.replace('Bearer ', '');

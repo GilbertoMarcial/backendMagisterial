@@ -38,6 +38,7 @@ module.exports = function (dbinjected){
 
     // Se obtiene el id del registro recién insertado
     const response = await db.create(TABLE, userData);
+
     const insertId = response.insertId;
 
     let responseAuth = '';
@@ -56,6 +57,7 @@ module.exports = function (dbinjected){
       await asistant.create({
         id: insertId,
         nombre_asistente: body.nombre_asistente,
+        apellidos_asistente: body.apellidos_asistente,
         email: body.username,
         funcion_id: 1,
         modalidad_id: 1,

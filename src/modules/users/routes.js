@@ -2,6 +2,7 @@
 // Se importa express para poder usar el router
 const express = require('express');
 
+// Se importa security para validar a través de Token
 const security = require('./security');
 
 // Se importan las responses para poder usar la estructura de la respuesta

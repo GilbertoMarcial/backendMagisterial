@@ -12,7 +12,7 @@ const controller = require('./index');
 const router = express.Router();
 
 // Rutas de la aplicación
-router.get('/', login);
+router.post('/', login);
 
 // Funciones
 async function login (req, res, next) {

@@ -123,10 +123,22 @@ function deactivate(table, id) {
 }
 
 // Función para autenticar un usuario
-function query(table, query) {
+function query_auth(username) {
   return new Promise((resolve, reject) => {
-    connection.query(`SELECT * FROM ${table} WHERE ?`, query, (err, data) => {
-      return (err) ? reject(err) : resolve(data[0] || null);
+    connection.query(`SELECT auth.id, auth.username, auth.password, users.is_admin 
+                    FROM auth 
+                    INNER JOIN users on auth.username = users.username 
+                    WHERE auth.username = ?`, username, (err, data) => {
+      if (err) {
+        reject(err); // Si hay un error en la consulta, rechazar la promesa con el error
+      } else {
+        // Verificar si los datos se encontraron
+        if (data && data.length > 0) {
+          resolve(data[0]); // Si se encontraron datos, resolver la promesa con los datos
+        } else {
+          reject(new Error ('Usuario o contraseña incorrectos') ); 
+        }
+      }
     });
   });
 }
@@ -141,5 +153,5 @@ module.exports = {
     update,
     activate,
     deactivate,
-    query
+    query_auth
 };

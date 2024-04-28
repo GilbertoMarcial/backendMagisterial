@@ -63,6 +63,12 @@ module.exports = function (dbinjected){
 
   // Función que actualiza un registro en la tabla 'asistente'
   function update(id, body) {
+    // Antes de almacenar, remover is_admin para evitar conflictos
+    // ya que solo es usado para fines de administrador
+    if (body.hasOwnProperty('is_admin')) {
+      delete body.is_admin;
+    }
+    
     return db.update(TABLE, id, body);
   }
 

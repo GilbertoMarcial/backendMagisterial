@@ -1,5 +1,6 @@
 const express = require('express');
 const config = require('./config');
+const cors = require('cors');
 const error = require('./network/errors');
 
 // Routes
@@ -14,6 +15,13 @@ app.use(express.json());
 
 // Se usa para reconocer el objeto de solicitud entrante como cadenas o matrices.
 app.use(express.urlencoded({ extended: true }));
+
+// Cors
+// Habilitamos CORS para que la API pueda ser consumida por el frontend
+app.use(cors({
+  origin: 'http://localhost:4200', // URL del frontend
+  optionsSuccessStatus: 200
+}));
 
 // Configuration
 app.set('port', config.app.port);

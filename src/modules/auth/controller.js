@@ -1,7 +1,10 @@
 // USERS CONTROLLER
 const bcrypt = require('bcrypt');
 const auth = require('../../auth');
+const error = require('../../middleware/errors');
+
 const TABLE = 'auth';
+const TABLE_USERS = 'users';
 
 
 module.exports = function (dbinjected){
@@ -14,16 +17,25 @@ module.exports = function (dbinjected){
 
   // Función que autentica un usuario y obtiene el token
   async function login(username, password) {
-    const data = await db.query(TABLE, {username: username});
+    const data = await db.query_auth(username);
 
     return bcrypt.compare(password, data.password)
       .then(result => {
         if (result === true) {
           // Se genera un token
-          return auth.asignToken({ ...data});
+          const tokenData = {
+            id: data.id,
+            username: data.username,
+            is_admin: data.is_admin
+          }
+
+          return {
+            token: auth.asignToken(tokenData),
+            is_admin: data.is_admin
+          }
           
       } else {
-        throw new Error('Información inválida');
+        throw error('Usuario o contraseña incorrectos');
       }
     });
   }
