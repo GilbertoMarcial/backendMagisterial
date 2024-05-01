@@ -15,10 +15,10 @@ module.exports = function (dbinjected){
   // Función que obtiene todos los registros de la tabla 'asistente'
   function getAll() {
     query_get_all = `SELECT 
-                      ${TABLE}.id as id_asistente, entidad, escuela, nombre_director, 
+                      ${TABLE}.id, entidad, escuela, nombre_director, 
                       nombre_asistente, apellidos_asistente, licenciatura, semestre, 
-                      email, telefono, is_vehiculo, funcion.nombre as funcion_nombre, 
-                      modalidad.nombre as modalidad_nombre, tipo_vehiculo.nombre as vehiculo_nombre,
+                      email, telefono, is_vehiculo, funcion.nombre as name_funcion, 
+                      modalidad.nombre as name_modalidad, tipo_vehiculo.nombre as name_vehiculo,
                       (SELECT COUNT(*) FROM ${TABLE}) AS total_asistentes
                     FROM 
                       ${TABLE}
@@ -34,10 +34,10 @@ module.exports = function (dbinjected){
   // Función que obtiene un registro de la tabla 'asistente' con el id 'id'
   function getOne(id) {
     query_get_one = `SELECT 
-                      ${TABLE}.id as id_asistente, entidad, escuela, nombre_director, 
+                      ${TABLE}.id, entidad, escuela, nombre_director, 
                       nombre_asistente, apellidos_asistente, licenciatura, semestre, 
-                      email, telefono, is_vehiculo, funcion.nombre as funcion_nombre, 
-                      modalidad.nombre as modalidad_nombre, tipo_vehiculo.nombre as vehiculo_nombre
+                      email, telefono, is_vehiculo, funcion.nombre as name_funcion, 
+                      modalidad.nombre as name_modalidad, tipo_vehiculo.nombre as name_vehiculo
                     FROM 
                       ${TABLE}
                     INNER JOIN 
@@ -49,6 +49,27 @@ module.exports = function (dbinjected){
                     WHERE 
                       ${TABLE}.id = ${id}`
     return db.getOneAsistant(query_get_one);
+  }
+
+  // Función que obtiene un registro de la tabla 'asistente' de acuerdo con su email
+  function getByEmail(email) {
+    query_get_one = `SELECT 
+                      ${TABLE}.id, entidad, escuela, nombre_director, 
+                      nombre_asistente, apellidos_asistente, licenciatura, semestre, 
+                      email, telefono, is_vehiculo, funcion.id as funcion_id, funcion.nombre as name_funcion, 
+                      modalidad.id as modalidad_id, modalidad.nombre as name_modalidad, 
+                      tipo_vehiculo.id as tipo_vehiculo_id, tipo_vehiculo.nombre as name_vehiculo
+                    FROM 
+                      ${TABLE}
+                    INNER JOIN 
+                      funcion ON asistente.funcion_id = funcion.id
+                    INNER JOIN 
+                      modalidad ON asistente.modalidad_id = modalidad.id
+                    INNER JOIN 
+                      tipo_vehiculo ON asistente.tipo_vehiculo_id = tipo_vehiculo.id
+                    WHERE 
+                      email = ?`
+    return db.getOneAsistantEmail(query_get_one, email);
   }
 
   // Función que elimina un registro de la tabla 'asistente' con el id 'id'
@@ -75,6 +96,7 @@ module.exports = function (dbinjected){
   return {
     getAll, 
     getOne, 
+    getByEmail,
     deleteOne, 
     create, 
     update

@@ -15,11 +15,12 @@ const controller = require('./index');
 const router = express.Router();
 
 // Rutas de la aplicación
-router.get('/', all);
+router.get('/', security(), all);
 router.get('/:id', one);
-router.put('/', deleteOne);
+router.get('/email/:email', security(), oneByEmail);
+router.patch('/', security(), deleteOne);
 router.post('/', create);
-router.put('/:id', security(), update);
+router.patch('/:id', security(), update);
 
 // Función que obtiene todos los registros de la tabla asistentes
 async function all (req, res, next) {
@@ -40,6 +41,16 @@ async function one (req, res, next) {
     next(error);
   }
 };
+
+// Función que obtiene un registro de la tabla de acuerdo con su email
+async function oneByEmail (req, res, next) {
+  try {
+    const item = await controller.getByEmail(req.params.email);
+    response.success(req, res, item, 200);
+  } catch (error) {
+    next(error);
+  }
+}
 
 // Funcion que elimina un registro de la tabla de acuerdo con su id
 async function deleteOne (req, res, next) {
@@ -63,8 +74,20 @@ async function create (req, res, next) {
 
 // Función que actualiza un registro en la tabla
 async function update (req, res, next) {
+  // Definir las claves permitidas que se pueden actualizar
+  const dataFromRequest = req.body;
+  const allowedKeys = ['entidad', 'escuela', 'nombre_director', 'nombre_asistente', 'apellidos_asistente', 'licenciatura', 'semestre', 'telefono', 'is_vehiculo', 'funcion_id', 'modalidad_id', 'tipo_vehiculo_id'];
+
+  // Filtrar las claves válidas del JSON
+  const filteredData = Object.keys(dataFromRequest)
+    .filter(key => allowedKeys.includes(key))
+    .reduce((obj, key) => {
+      obj[key] = dataFromRequest[key];
+      return obj;
+    }, {});
+
   try {
-    await controller.update(req.params.id, req.body);
+    await controller.update(req.params.id, filteredData);
     response.success(req, res, 'Registro actualizado correctamente', 200);
   } catch (error) {
     next(error);

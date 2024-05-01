@@ -26,9 +26,9 @@ const checkToken = {
 
       // Si el id del token no es igual al id del usuario, 
       // verificar que sea un admin
-      if (is_admin === 0) {
-        throw error('No tienes los permisos para realizar esta acción');
-      }
+      // if (is_admin === 0) {
+      //   throw error('No tienes los permisos para realizar esta acción');
+      // }
     }
   }
 }

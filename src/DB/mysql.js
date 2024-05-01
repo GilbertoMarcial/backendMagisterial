@@ -77,6 +77,15 @@ function getOneAsistant(query) {
   });
 }
 
+// Función que obtiene un registro de la tabla 'asistentes' por su email
+function getOneAsistantEmail(query, email) {
+  return new Promise((resolve, reject) => {
+    connection.query(query, [email], (err, data) => {
+      return (err) ? reject(err) : resolve(data);
+    });
+  });
+}
+
 // Funciton que eliminar un registro de la tabla 'table' con el id 'id'
 function deleteOne(table, data) {
   return new Promise((resolve, reject) => {
@@ -148,6 +157,7 @@ module.exports = {
     getAllAsistants,
     getOne,
     getOneAsistant,
+    getOneAsistantEmail,
     deleteOne,
     create,
     update,

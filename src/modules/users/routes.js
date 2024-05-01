@@ -15,7 +15,7 @@ const controller = require('./index');
 const router = express.Router();
 
 // Rutas de la aplicación
-router.get('/', all);
+router.get('/', security(), all);
 router.get('/:id', one);
 router.put('/', deleteOne);
 router.post('/', create);

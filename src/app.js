@@ -7,6 +7,7 @@ const error = require('./network/errors');
 const asistentes = require('./modules/asistentes/routes');
 const users = require('./modules/users/routes');
 const auth = require('./modules/auth/routes');
+const presentacion = require('./modules/presentacion/routes');
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.set('port', config.app.port);
 
 // Routes
 app.use('/api/asistentes', asistentes);
+app.use('/api/presentacion', presentacion);
 app.use('/api/users', users);
 app.use('/api/auth', auth);
 
