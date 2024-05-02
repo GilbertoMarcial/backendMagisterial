@@ -152,6 +152,15 @@ function query_auth(username) {
   });
 }
 
+// Función que modifica la contraseña de usuario
+function updatePassword(username, hash) {
+  return new Promise((resolve, reject) => {
+    connection.query(`UPDATE auth SET password = ? WHERE username = ?`, [hash, username], (err, result) => {
+      return (err) ? reject(err) : resolve(result);
+    });
+  });
+}
+
 module.exports = {
     getAll,
     getAllAsistants,
@@ -163,5 +172,6 @@ module.exports = {
     update,
     activate,
     deactivate,
-    query_auth
+    query_auth, 
+    updatePassword
 };

@@ -57,8 +57,26 @@ module.exports = function (dbinjected){
     return db.create(TABLE, authData);
   }
 
+  // Función que modifica la contraseña de usuario
+  async function updatePassword(username, password, new_password) {
+    const data = await db.query_auth(username, password, new_password);
+
+    return bcrypt.compare(password, data.password)
+      .then(result => {
+        if (result === true) {
+          return bcrypt.hash(new_password, 5)
+            .then(hash => {
+              return db.updatePassword(username, hash);
+            });
+        } else {
+          throw error('Contraseña incorrecta');
+        }
+      });
+  }
+
   return {
     create,
-    login
+    login, 
+    updatePassword
   }
 }
