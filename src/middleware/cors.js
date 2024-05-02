@@ -4,7 +4,8 @@ const app = express();
 
 // Habilitamos CORS para que la API pueda ser consumida por el frontend
 app.use(cors({
-  origin: 'http://localhost:4200', // URL del frontend
+  origin: 'https://www.calpullixalapa.com.mx/', // URL del frontend
+  // origin: 'http://localhost:4200', // URL del frontend
   optionsSuccessStatus: 200
 }));
 
