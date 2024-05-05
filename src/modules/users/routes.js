@@ -8,11 +8,21 @@ const security = require('./security');
 // Se importan las responses para poder usar la estructura de la respuesta
 const response = require('../../network/responses');
 
+// Se importa nodemailer
+const nodemailer = require('nodemailer');
+
 // Se importa el index que es el constructor donde se inyecta la base de datos
 const controller = require('./index');
 
+// Se importa el módulo de file system para poder leer archivos
+const fs = require('fs');
+
 // Se importa el router de express para poder definir las rutas de la aplicación.
 const router = express.Router();
+
+// Se obtiene la ruta al archivo HTML
+const path = require('path');
+const htmlPath = path.join(__dirname, 'email.html');
 
 // Rutas de la aplicación
 router.get('/', security(), all);
@@ -57,9 +67,38 @@ async function deleteOne (req, res, next) {
 async function create (req, res, next) {
   try {
     await controller.create(req.body);
-    response.success(req, res, 'Registro creado correctamente', 201);
+    // Comentado para fines de desarrollo descomentar antes de mandar a producción
+    await sendMail(req, res);
+    response.success(req, res, 'Usted se ha registrado satisfactoriamente, por favor inicie sesión', 201);
   } catch (error) {
     next(error);
+  }
+}
+
+// Función que envía correo de confirmación
+// Una vez que se haya agregado se manda correo de confirmación
+const html = fs.readFileSync(htmlPath, 'utf8');
+async function sendMail(req, res) {
+  const { username } = req.body;
+  try {
+    const transporter = nodemailer.createTransport({
+      host: 'mail.calpullixalapa.com.mx',
+      port: 587,
+      auth: {
+        user: 'noresponder@calpullixalapa.com.mx',
+        pass: '%awp[7x@k2sL'
+      }
+    });
+
+    const info = await transporter.sendMail({
+      from: "Calpulli 2024 <noresponder@calpullixalapa.com.mx>",
+      to: `${username}`,
+      subject: "Bienvenido a Calpulli 2024",
+      html: html
+    });
+    console.log('Mensaje enviado: %s', info.messageId);
+  }catch (error) {
+    console.log('Error mandando mensaje', error);
   }
 }
 

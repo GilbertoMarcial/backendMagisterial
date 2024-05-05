@@ -14,3 +14,4 @@ module.exports = {
     database: process.env.MYSQL_DATABASE || 'example'
   }
 };
+

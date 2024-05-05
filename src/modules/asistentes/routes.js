@@ -66,7 +66,8 @@ async function deleteOne (req, res, next) {
 async function create (req, res, next) {
   try {
     await controller.create(req.body);
-    response.success(req, res, 'Registro creado correctamente', 201);
+    
+    response.success(req, res, 'Usuario registrado correctamente', 201);
   } catch (error) {
     next(error);
   }

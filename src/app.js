@@ -1,6 +1,7 @@
 const express = require('express');
 const config = require('./config');
-const cors = require('cors');
+// const cors = require('cors');
+const corsMiddleware = require('./middleware/cors');
 const error = require('./network/errors');
 
 // Routes
@@ -18,12 +19,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Cors
-// Habilitamos CORS para que la API pueda ser consumida por el frontend
-app.use(cors({
-  // origin: 'http://localhost:4200', // URL del frontend
-  origin: 'https://www.calpullixalapa.com.mx/',
-  optionsSuccessStatus: 200
-}));
+// const allowedOrigins = [
+//   'https://www.calpullixalapa.com.mx',
+//   'http://localhost:4200'
+// ];
+// // Habilitamos CORS para que la API pueda ser consumida por el frontend
+// app.use(cors({
+//   origin: allowedOrigins,
+//   // origin: 'http://localhost:4200', // URL del frontend
+//   // origin: 'https://www.calpullixalapa.com.mx',
+//   optionsSuccessStatus: 200
+// }));
+
+// Cors
+app.use(corsMiddleware);
 
 // Configuration
 app.set('port', config.app.port);

@@ -2,6 +2,7 @@
 const TABLE = 'users';
 const auth = require('../auth');
 const asistant = require('../asistentes');
+const presentacion = require('../presentacion');
 
 
 module.exports = function (dbinjected){
@@ -38,7 +39,6 @@ module.exports = function (dbinjected){
 
     // Se obtiene el id del registro recién insertado
     const response = await db.create(TABLE, userData);
-
     const insertId = response.insertId;
 
     let responseAuth = '';
@@ -59,9 +59,19 @@ module.exports = function (dbinjected){
         nombre_asistente: body.nombre_asistente,
         apellidos_asistente: body.apellidos_asistente,
         email: body.username,
-        funcion_id: 1,
-        modalidad_id: 1,
+        funcion_id: 4,
+        modalidad_id: 11,
         tipo_vehiculo_id: 1
+      });
+
+      // Por último se crea el registro en la tabla presentacion_gen con los datos de asistente
+      const name_asistente = body.nombre_asistente + ' ' + body.apellidos_asistente;
+      await presentacion.create({
+        id: insertId,
+        asistente_nombre_asistentes: name_asistente,
+        artes_tipo_participacion_id: 4, 
+        himno_modalidad_himno_id : 4, 
+        canto_modalidad_canto_id: 3
       });
     }
 

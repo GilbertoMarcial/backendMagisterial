@@ -9,37 +9,37 @@ const dbConfig = {
   database: config.mysql.database
 };
 
-let connection;
+let connection = require('./mysqlConnector');
 
-// Función para manejar la conexión a la BD
-function handleConnection() {
-  connection = mysql.createConnection(dbConfig);
+// // Función para manejar la conexión a la BD
+// function handleConnection() {
+//   connection = mysql.createConnection(dbConfig);
 
-  // Conectar a la BD
-  connection.connect((err) => {
-    if (err) {
-      console.error('[db error]', err);
-      // Después de un tiempo volver a intentar la conexión
-      setTimeout(handleConnection, 2000);
-    } else {
-      // Si no hay errors, mostrar mensaje de conexión exitosa
-      console.log('DB Connected');
-    }
-  });
+//   // Conectar a la BD
+//   connection.connect((err) => {
+//     if (err) {
+//       console.error('[db error]', err);
+//       // Después de un tiempo volver a intentar la conexión
+//       setTimeout(handleConnection, 2000);
+//     } else {
+//       // Si no hay errors, mostrar mensaje de conexión exitosa
+//       console.log('DB Connected');
+//     }
+//   });
 
-  // Manejar errores de la conexión
-  connection.on('error', (err) => {
-    console.error('[db error]', err);
-    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-      handleConnection();
-    } else {
-      throw err;
-    }
-  });
-}
+//   // Manejar errores de la conexión
+//   connection.on('error', (err) => {
+//     console.error('[db error]', err);
+//     if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+//       handleConnection();
+//     } else {
+//       throw err;
+//     }
+//   });
+// }
 
-// Llamamos a la conexión
-handleConnection();
+// // Llamamos a la conexión
+// handleConnection();
 
 // Función que obtiene todos los registros de la tabla genérica 'table'
 function getAll(table) {
@@ -68,7 +68,7 @@ function getOne(table, id) {
   });
 }
 
-// Función que obtiene un registro de la tabla 'asistentes' con el id 'id'
+// Función que obtiene un registro de la tabla 'asistentes' (genérico) con el id 'id'
 function getOneAsistant(query) {
   return new Promise((resolve, reject) => {
     connection.query(`${query}`, (err, data) => {
