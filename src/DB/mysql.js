@@ -104,6 +104,20 @@ function create(table, data) {
   });
 }
 
+function createPresentacion(table, id, data) {
+  // Clonamos el objeto data para evitar modificar el original
+  const newData = { ...data }
+
+  return new Promise((resolve, reject) => {
+    if (data.id) {
+      newData.id = data.id;
+    }
+    connection.query(`INSERT INTO ${table} SET ?`, newData, (err, result) => {
+      return (err) ? reject(err) : resolve(result);
+    });
+  });
+}
+
 // Función que actualiza un registro en la tabla 'table'
 function update(table, id, data) {
   return new Promise((resolve, reject) => {
@@ -169,6 +183,7 @@ module.exports = {
     getOneAsistantEmail,
     deleteOne,
     create,
+    createPresentacion,
     update,
     activate,
     deactivate,

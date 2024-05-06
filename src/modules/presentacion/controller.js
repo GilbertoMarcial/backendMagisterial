@@ -1,5 +1,9 @@
 // PRESENTACION CONTROLLER
 const TABLE = 'presentacion_gen';
+
+// Se importa multer para poder subir archivos
+const multer = require('multer');
+
 let query_get_one = "";
 
 module.exports = function (dbinjected){
@@ -14,6 +18,7 @@ module.exports = function (dbinjected){
   function getByIdTemp(id) {
     return db.getOne(TABLE, id);
   }
+
   function getById(id) {
     query_get_one = `SELECT
       presentacion_gen.id, escuela, entidad, email, telefono_celular, 
@@ -130,7 +135,112 @@ module.exports = function (dbinjected){
 
   // Función que actualiza un registro en la tabla 'asistente'
   function update(id, body) {
-    return db.update(TABLE, id, body);
+    // Verificar si id_asistant existe en la base de datos
+    db.getOne(TABLE, id)
+      .then(existingRecord => {
+        if (existingRecord.length > 0) {
+          // Actualizar registro
+          return db.update(TABLE, id, body);
+        } else {
+          // Crear registro
+          body.id = id;
+          return db.createPresentacion(TABLE, id, body);
+        }
+      })
+    // return db.update(TABLE, id, body);
+  }
+
+  // Función que permite la carga de archivos
+  function uploadFileBackUp(req, res, next) {
+    const storage = multer.diskStorage({
+      // destination: './uploads',
+      destination: '../front/src/assets/files-asistants',    // Local
+      // destination: '../public_html/assets/files-asistants',    // Remote
+      filename: function (req, file, cb) {
+        cb(null, file.originalname);
+      }
+    });
+
+    const upload = multer({ storage: storage }).single('file');
+
+    upload(req, res, function (err) {
+      if (err) {
+        return res.status(500).json(err);
+      }
+
+      // Guardar nombre del archivo en la base de datos
+      const fileName = req.file.originalname;
+      const id_asistant = fileName.split('-')[0];
+      const query = JSON.parse(req.body.jsonData);
+
+      // Verificar si el id_asistant existe en la base de datos
+      db.getOne(TABLE, id_asistant)
+        .then(existingRecord => {
+          if (existingRecord.length > 0) {
+            // Actualizar registro
+            return db.update(TABLE, id_asistant, query);
+          } else {
+            // Crear registro
+            return db.create(TABLE, query);
+          }
+        })
+
+      return db.update(TABLE, id_asistant, query);
+    });
+  }
+
+  function uploadFile(req, res, next) {
+    const storage = multer.diskStorage({
+      // destination: './uploads',
+      destination: '../front/src/assets/files-asistants',    // Local
+      // destination: '../public_html/assets/files-asistants',    // Remote
+      filename: function (req, file, cb) {
+        cb(null, file.originalname);
+      }
+    });
+
+    const upload = multer({ storage: storage }).single('file');
+    
+    upload(req, res, function (err) {
+      if (err) {
+        return res.status(500).json(err);
+      }
+
+      // Guardar nombre del archivo en la base de datos
+      const fileName = req.file.originalname;
+      const id_asistant = fileName.split('-')[0];
+      const query = JSON.parse(req.body.jsonData);
+
+      // Verificar si el id_asistant existe en la base de datos
+      db.getOne(TABLE, id_asistant)
+        .then(existingRecord => {
+          if (existingRecord.length > 0) {
+            // Actualizar registro
+            db.update(TABLE, id_asistant, query)
+              .then(() => {
+                return res.status(200).json({ message: 'Archivo subido correctamente' });
+              })
+              .catch(err => {
+                return res.status(500).json(err);
+              });
+                
+          } else {
+            // Crear registro
+            db.create(TABLE, query)
+              .then(() => {
+                return res.status(200).json({ message: 'Archivo subido correctamente' });
+              })
+              .catch(err => {
+                return res.status(500).json(err)
+              });
+          }
+        })
+        .catch(err => {
+          return res.status(500).json(err);
+        });
+
+      return db.update(TABLE, id_asistant, query);
+    });
   }
 
   return {
@@ -138,6 +248,7 @@ module.exports = function (dbinjected){
     getById, 
     create, 
     update, 
+    uploadFile,
     exists
   }
 }
