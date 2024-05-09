@@ -86,7 +86,7 @@ async function sendMail(req, res) {
       port: 587,
       auth: {
         user: 'noresponder@calpullixalapa.com.mx',
-        pass: '%awp[7x@k2sL'
+        pass: ''
       }
     });
 
