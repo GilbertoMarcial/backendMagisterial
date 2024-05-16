@@ -16,11 +16,16 @@ const router = express.Router();
 
 // Rutas de la aplicación
 router.get('/', security(), all);
+router.get('/all', security(), allPaginated);
+router.get('/total', total);
 router.get('/:id', one);
 router.get('/email/:email', security(), oneByEmail);
 router.patch('/', security(), deleteOne);
 router.post('/', create);
 router.patch('/:id', security(), update);
+
+// Rutas por modalidad
+router.get('/modalidad/:id', security(), getByModalidad);
 
 // Función que obtiene todos los registros de la tabla asistentes
 async function all (req, res, next) {
@@ -31,6 +36,41 @@ async function all (req, res, next) {
     next(error);
   }
 };
+
+// Función que obtiene todos los registros de la tabla asistentes por páginación (25 o 50)
+async function allPaginated (req, res, next) {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 2;
+  const startIndex = (page - 1) * limit;
+
+  try {
+    const items_list = await controller.getAllPaginated(startIndex, limit);
+    response.success(req, res, items_list, 200);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Función que obtiene el total de registros de la tabla asistentes
+async function total (req, res, next) {
+  try {
+    const total = await controller.getTotal();
+    response.success(req, res, total, 200);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Función que obtiene todos los registros de la tabla de acuerdo con su modalidad
+async function getByModalidad (req, res, next) {
+  try {
+    const items_list = await controller.getByModalidad(req.params.id);
+    response.success(req, res, items_list, 200);
+  } catch (error) {
+    next(error);
+  }
+
+}
 
 // Función que obtiene un registro de la tabla de acuerdo con su id
 async function one (req, res, next) {

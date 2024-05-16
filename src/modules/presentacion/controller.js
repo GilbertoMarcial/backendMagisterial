@@ -124,7 +124,7 @@ module.exports = function (dbinjected){
 
   // Función que solo sirve para saber si existe un registro por su id
   function exists(id) {
-    query_get_one = `SELECT id FROM ${TABLE} WHERE asistente_id = ${id}`;
+    query_get_one = `SELECT COUNT(id) FROM ${TABLE} WHERE id = ${id}`;
     return db.getOneAsistant(query_get_one);
   }
 
@@ -150,97 +150,107 @@ module.exports = function (dbinjected){
     // return db.update(TABLE, id, body);
   }
 
-  // Función que permite la carga de archivos
-  function uploadFileBackUp(req, res, next) {
+  async function uploadFileBackup(req, res, next) {
     const storage = multer.diskStorage({
-      // destination: './uploads',
-      destination: '../front/src/assets/files-asistants',    // Local
-      // destination: '../public_html/assets/files-asistants',    // Remote
+      destination: function (req, file, cb) {
+        cb(null, '../front/src/assets/files-asistants')     // Local
+        // cb(null, '/public_html/assets/files-asistants')     // Remote
+      },
       filename: function (req, file, cb) {
         cb(null, file.originalname);
       }
     });
 
+    // Subimos el archivo
     const upload = multer({ storage: storage }).single('file');
 
+    // Buscar si asistente existe en BD
+    const query = `SELECT COUNT(id) FROM ${TABLE} WHERE id = ${req.params.id}`;
+    const exists = await db.getOneAsistant(query);
+
     upload(req, res, function (err) {
-      if (err) {
-        return res.status(500).json(err);
+      if (err instanceof multer.MulterError) {
+        return res.status(500).json('Error en multer: ', err);
+      } else if (err) {
+        return res.status(500).json('Error desconocido: ', err);
       }
 
-      // Guardar nombre del archivo en la base de datos
-      const fileName = req.file.originalname;
-      const id_asistant = fileName.split('-')[0];
-      const query = JSON.parse(req.body.jsonData);
-
-      // Verificar si el id_asistant existe en la base de datos
-      db.getOne(TABLE, id_asistant)
-        .then(existingRecord => {
-          if (existingRecord.length > 0) {
-            // Actualizar registro
-            return db.update(TABLE, id_asistant, query);
-          } else {
-            // Crear registro
-            return db.create(TABLE, query);
-          }
-        })
-
-      return db.update(TABLE, id_asistant, query);
+      if (exists[0]['COUNT(id)'] > 0) {
+        // Actualizar registro
+        return db.update(TABLE, req.params.id, JSON.parse(req.body.jsonData));
+      } else {
+        // Crear registro
+        return db.createPresentacion(TABLE, req.params.id, JSON.parse(req.body.jsonData));
+      }
     });
   }
-
-  function uploadFile(req, res, next) {
-    const storage = multer.diskStorage({
-      // destination: './uploads',
-      destination: '../front/src/assets/files-asistants',    // Local
-      // destination: '../public_html/assets/files-asistants',    // Remote
-      filename: function (req, file, cb) {
-        cb(null, file.originalname);
-      }
-    });
-
-    const upload = multer({ storage: storage }).single('file');
-    
-    upload(req, res, function (err) {
-      if (err) {
-        return res.status(500).json(err);
-      }
-
-      // Guardar nombre del archivo en la base de datos
-      const fileName = req.file.originalname;
-      const id_asistant = fileName.split('-')[0];
-      const query = JSON.parse(req.body.jsonData);
-
-      // Verificar si el id_asistant existe en la base de datos
-      db.getOne(TABLE, id_asistant)
-        .then(existingRecord => {
-          if (existingRecord.length > 0) {
-            // Actualizar registro
-            db.update(TABLE, id_asistant, query)
-              .then(() => {
-                return res.status(200).json({ message: 'Archivo subido correctamente' });
-              })
-              .catch(err => {
-                return res.status(500).json(err);
-              });
-                
-          } else {
-            // Crear registro
-            db.create(TABLE, query)
-              .then(() => {
-                return res.status(200).json({ message: 'Archivo subido correctamente' });
-              })
-              .catch(err => {
-                return res.status(500).json(err)
-              });
+  
+  // Función para cambiar el nombre al archivo
+  function changeName(jsonData) {
+      // Convertir el JSON a objeto
+      let obj = JSON.parse(jsonData);
+      
+      // Iterar sobre todas las claves del objeto JSON
+      for (let key in obj) {
+          // Verificamos si el valor es una cadena
+          if (typeof obj[key] === 'string') {
+              // Modificamos el nombre
+              let new_name = obj[key];
+              obj[key] = 'https://calpullixalapa.com.mx/assets/files-asistants/' + new_name;
           }
-        })
-        .catch(err => {
-          return res.status(500).json(err);
-        });
+      }
+      
+      return JSON.stringify(obj);
+  }
 
-      return db.update(TABLE, id_asistant, query);
-    });
+  async function uploadFile(req, res, next) {
+    // const storage = multer.diskStorage({
+    //   destination: function (req, file, cb) {
+    //     cb(null, '../front/src/assets/files-asistants')     // Local
+    //     // cb(null, '/public_html/assets/files-asistants')     // Remote
+    //   },
+    //   filename: function (req, file, cb) {
+    //     cb(null, file.originalname);
+    //   }
+    // });
+
+    // // Subimos el archivo
+    // const upload = multer({ storage: storage }).single('file');
+
+    // Buscar si asistente existe en BD
+    const query = `SELECT COUNT(id) FROM ${TABLE} WHERE id = ${req.params.id}`;
+    const exists = await db.getOneAsistant(query);
+    
+    // Agregamos el path al nombre
+    let newJson = changeName(req.body.jsonData);
+
+    if (exists[0]['COUNT(id)'] > 0) {
+      // Actualizar registro
+      console.log('req update', req.body);
+      return db.update(TABLE, req.params.id, JSON.parse(newJson));
+    } else {
+      // Crear registro
+      console.log('req create', req.body);
+      return db.createPresentacion(TABLE, req.params.id, JSON.parse(newJson));
+    }
+
+    // upload(req, res, function (err) {
+    //   if (err instanceof multer.MulterError) {
+    //     return res.status(500).json('Error en multer: ', err);
+    //   } else if (err) {
+    //     return res.status(500).json('Error desconocido: ', err);
+    //   }
+
+    //   if (exists[0]['COUNT(id)'] > 0) {
+    //     // Actualizar registro
+    //     console.log('req update', req.body);
+    //     return db.update(TABLE, req.params.id, JSON.parse(req.body.jsonData));
+    //   } else {
+    //     // Crear registro
+    //     console.log('req create', req.body);
+    //     return db.createPresentacion(TABLE, req.params.id, JSON.parse(req.body.jsonData));
+    //   }
+    // });
   }
 
   return {

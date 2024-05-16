@@ -23,6 +23,7 @@ router.get('/:id', security(), getById);
 router.get('/exists/:id', security(), exists);
 router.post('/', security(), create);
 router.patch('/:id', update);
+// router.post('file/:id', uploadFile)
 router.post('/file/:id', uploadFile)
 
 // Función que obtiene los datos de la presentación a través de su id
@@ -176,10 +177,28 @@ async function update (req, res, next) {
 }
 
 // Función que permite la carga de archivos
-async function uploadFile (req, res) {
+async function uploadFile (req, res, next) {
   try {
-    await controller.uploadFile(req, res);
-    // response.success(req, res, 'Archivo subido correctamente', 200);
+    const storage = multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, '../front/src/assets/files-asistants')     // Local
+        // cb(null, '/home/aop0aqs5h6vr/public_html/assets/files-asistants')     // Remote
+      },
+      filename: function (req, file, cb) {
+        cb(null, file.originalname);
+      }
+    });
+    
+    // Subimos el archivo
+    const upload = multer({ storage: storage }).single('file');
+    
+    upload(req, res, async function(err) {
+      if (err) {
+        return response.error(req, res, 'Error al subir el archivo', 500);
+      }
+      await controller.uploadFile(req, res, next);
+      response.success(req, res, 'Archivo subido correctamente', 200);
+    });
   } catch (error) {
     next(error);
   }

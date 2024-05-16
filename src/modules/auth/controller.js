@@ -2,6 +2,7 @@
 const bcrypt = require('bcrypt');
 const auth = require('../../auth');
 const error = require('../../middleware/errors');
+const jwt = require('jsonwebtoken');
 
 const TABLE = 'auth';
 const TABLE_USERS = 'users';
@@ -58,25 +59,61 @@ module.exports = function (dbinjected){
   }
 
   // Función que modifica la contraseña de usuario
-  async function updatePassword(username, password, new_password) {
-    const data = await db.query_auth(username, password, new_password);
+  async function updatePassword(dataAuth) {
+    // Buscamos el usuario con id
+    const dataUser = await db.getOne(TABLE, dataAuth.id);
+    const dataPwd = dataUser[0].password;
 
-    return bcrypt.compare(password, data.password)
-      .then(result => {
-        if (result === true) {
-          return bcrypt.hash(new_password, 5)
-            .then(hash => {
-              return db.updatePassword(username, hash);
-            });
-        } else {
-          throw error('Contraseña incorrecta');
-        }
-      });
+    // Se verifica que la contraseña actual sea correcta
+    const passwordMatch = await bcrypt.compare(dataAuth.password, dataPwd);
+    if (!passwordMatch) {
+      throw error('Contraseña incorrecta');
+    }
+
+    // Actualizamos la contraseña actual
+    const hashedNewPassword = await bcrypt.hash(dataAuth.new_password, 5);
+
+    return db.updatePassword(dataAuth.id, hashedNewPassword);
+  }
+
+  // Función que resetea la contraseña de un usuario
+  async function recoveryPassword(username) {
+    let query = `SELECT * FROM ${TABLE} WHERE username = "${username}"`; 
+
+    // Buscamos usuario con username
+    const dataUser = await db.getOneAsistant(query, username);
+    
+    // Si el usuario existe, mandar email con enlace para cambiar contraseña
+    if (dataUser.length > 0) {
+      // Se crea el token
+      const token = jwt.sign({ username }, 'CalpulliSecret', { expiresIn: '24h' });
+      
+      // Se almacena token en auth de acuerdo con su id
+      await db.updateToken(TABLE, dataUser[0].id, token);
+
+      dataUser[0].token = token;
+
+      return dataUser[0];
+    } else {
+      throw error('Error: el correo ingresado no corresponde a ningún usuario registrado');
+    }
+
+  }
+
+  // Función que resetea el password
+  async function resetPassword(id, password, token) {
+    const hash = await bcrypt.hashSync(password.toString(), 5);
+    const decodeToken = jwt.verify(token, 'CalpulliSecret');
+    const username = decodeToken.username;
+
+    return db.resetPassword(id, hash, username);
   }
 
   return {
     create,
     login, 
-    updatePassword
+    updatePassword, 
+    recoveryPassword, 
+    resetPassword
   }
 }

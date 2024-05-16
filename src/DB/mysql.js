@@ -11,36 +11,6 @@ const dbConfig = {
 
 let connection = require('./mysqlConnector');
 
-// // Función para manejar la conexión a la BD
-// function handleConnection() {
-//   connection = mysql.createConnection(dbConfig);
-
-//   // Conectar a la BD
-//   connection.connect((err) => {
-//     if (err) {
-//       console.error('[db error]', err);
-//       // Después de un tiempo volver a intentar la conexión
-//       setTimeout(handleConnection, 2000);
-//     } else {
-//       // Si no hay errors, mostrar mensaje de conexión exitosa
-//       console.log('DB Connected');
-//     }
-//   });
-
-//   // Manejar errores de la conexión
-//   connection.on('error', (err) => {
-//     console.error('[db error]', err);
-//     if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-//       handleConnection();
-//     } else {
-//       throw err;
-//     }
-//   });
-// }
-
-// // Llamamos a la conexión
-// handleConnection();
-
 // Función que obtiene todos los registros de la tabla genérica 'table'
 function getAll(table) {
   return new Promise((resolve, reject) => {
@@ -167,13 +137,32 @@ function query_auth(username) {
 }
 
 // Función que modifica la contraseña de usuario
-function updatePassword(username, hash) {
+function updatePassword(id, hash) {
+  return new Promise((resolve, reject) => {
+    connection.query(`UPDATE auth SET password = ? WHERE id = ?`, [hash, id], (err, result) => {
+      return (err) ? reject(err) : resolve(result);
+    });
+  });
+}
+
+// Función que resetea la contraseña de un usuario
+function resetPassword(id, hash, username) {
   return new Promise((resolve, reject) => {
     connection.query(`UPDATE auth SET password = ? WHERE username = ?`, [hash, username], (err, result) => {
       return (err) ? reject(err) : resolve(result);
     });
   });
 }
+
+// Función que almacena el token en auth de acuerdo con su id
+function updateToken(table, id, token) {
+  return new Promise((resolve, reject) => {
+    connection.query(`UPDATE ${table} SET token = ? WHERE id = ?`, [token, id], (err, result) => {
+      return (err) ? reject(err) : resolve(result);
+    });
+  });
+}
+
 
 module.exports = {
     getAll,
@@ -188,5 +177,7 @@ module.exports = {
     activate,
     deactivate,
     query_auth, 
-    updatePassword
+    updatePassword, 
+    updateToken, 
+    resetPassword
 };

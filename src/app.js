@@ -12,14 +12,31 @@ const presentacion = require('./modules/presentacion/routes');
 
 const app = express();
 
+// Cors
+// const cors = (req, res, next) => {
+//   const origin = "*"; // <-- change this in production
+//   res.setHeader("Access-Control-Allow-Origin", origin);
+//   res.setHeader(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization"
+//   );
+//   res.setHeader(
+//     "Access-Control-Allow-Methods",
+//     "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+//   );
+//   next();
+// };
+// app.use(cors);
+app.use(corsMiddleware);
+
 // Se usa para reconocer el objeto de solicitud entrante como un objeto JSON.
 app.use(express.json());
 
 // Se usa para reconocer el objeto de solicitud entrante como cadenas o matrices.
 app.use(express.urlencoded({ extended: true }));
 
-// Cors
-app.use(corsMiddleware);
+// Archivos estáticos
+app.use(express.static('public'));
 
 // Configuration
 app.set('port', config.app.port);
